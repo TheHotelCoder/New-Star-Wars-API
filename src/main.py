@@ -30,7 +30,7 @@ setup_admin(app)
 jwt = JWTManager(app)
 
 
-
+#GET ALL USERS
 @app.route("/users",methods=['GET'])
 def all_users():
     people = User.get_all()
@@ -39,63 +39,87 @@ def all_users():
         people_dic.append(person.serialize())
     return jsonify(people_dic),200
 
+#GET ALL PEOPLE
 @app.route("/people",methods=['GET'])
-def all_people():
+def get_all_people():
     people = People.get_all()
     people_dic = []
     for person in people :
         people_dic.append(person.serialize())
     return jsonify(people_dic)
 
+#POST ALL PEOPLE
 @app.route("/people",methods=['POST'])
 def create_people ():
     json = request.get_json()
-    people = People()
-    people.set_with_json(json)
-    people.db_post()
+    print (json)
+    people = People.set_with_json(People(),json)
+    People.db_post(people)
     return jsonify(people.serialize())
+    # json = request.get_json()
+    # print(json)
+    # people = People()
+    # people.set_with_json(json)
+    # people.db_post()
+    # return jsonify(people.serialize())
 
+#GET PERSON BY ID
 @app.route("/people/<int:people_id>", methods=['GET'])
-def one_people(people_id):
+def get_person_by_id(people_id):
     people = People.get_one_by_id(people_id)
     people_serialized = people.serialized()
     return jsonify(people_serialized)
 
+#DELETE PERSON BY ID
 @app.route("/people/<int:people_id>", methods=['DELETE'])
-def delte_one_people(people_id):
+def delete_one_person(people_id):
     people = People.query.get(people_id)
     db.session.delete(people)
     db.session.commit()
-    return jsonify(people.serialize(), "msg: User is deleted") 
+    return jsonify(people.serialize(), "msg: Person has been deleted") 
 
-@app.route("/people" , methods=["DELETE"])
-def delete_all_person():
-    people = People.get_all()
-    print(people)
+# @app.route("/people" , methods=["DELETE"])
+# def delete_all_people:
+#     people = People.get_all()
+#     print(people)
 
-
+#GET ALL PLANETS
 @app.route("/planets", methods=["GET"])
-
-def all_planets():
+def get_all_planets():
     planets = Planets.get_all()
     planets_dic = []
     for planet in planets :
         planets_dic.append(planet.serialize())
     return jsonify(planets_dic)
 
+#POST ALL PLANETS
 @app.route("/planets",methods=['POST'])
-def create_planet():
+def create_planets():
     json = request.get_json()
-    planets = Planets()
-    planets.set_with_json(json)
-    planets.db_post()
+    print (json)
+    planets = Planets.set_with_json(Planets(),json)
+    planets.db_post(planets)
     return jsonify(planets.serialize())
+    # json = request.get_json()
+    # planets = Planets() 
+    # planets.set_with_json(json)
+    # planets.db_post()
+    # return jsonify(planets.serialize())
 
+#GET PLANET BY ID
 @app.route("/planet/<int:planet_id>", methods=['GET'])
-def one_planet(planet_id):
-    planet = People.get_one_by_id(planet_id)
+def gert_planet_by_id(planet_id):
+    planet = Planets.get_one_by_id(planet_id)
     planet_serialized = planet.serialize()
     return jsonify(planet_serialized) 
+
+#DELETE PLANET BY ID
+@app.route("/people/<int:planet_id>", methods=['DELETE'])
+def delete_one_planet(planet_id):
+    planet = Planets.query.get(planet_id)
+    db.session.delete(planet)
+    db.session.commit()
+    return jsonify(planet.serialize(), "msg: Planet has been deleted") 
 
 
 @app.route("/login", methods=['POST'])
@@ -104,7 +128,7 @@ def handle_login():
     json=request.get_json()
 
     if json is None: 
-        raise APIException("You shoulld be return a json")
+        raise APIException("You shoulld return a json")
 
     if "email" not in json:
         raise APIException("That's not an email in json")
