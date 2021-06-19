@@ -148,6 +148,11 @@ class People(BaseModel,db.Model):
         self.gender = json["gender"]
         self.height = json["height"]
         self.description = json["description"]
+        
+    def db_delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
 
 
 

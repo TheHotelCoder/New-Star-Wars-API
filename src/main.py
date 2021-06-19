@@ -9,7 +9,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Planets,People
+from models import db, User, Planets, People
 #from models import Person
 from flask_jwt_extended import JWTManager
 from flask_jwt_extended import create_access_token
@@ -67,7 +67,7 @@ def create_people ():
 @app.route("/people/<int:people_id>", methods=['GET'])
 def get_person_by_id(people_id):
     people = People.get_one_by_id(people_id)
-    people_serialized = people.serialized()
+    people_serialized = people.serialize()
     return jsonify(people_serialized)
 
 #DELETE PERSON BY ID
@@ -76,12 +76,18 @@ def delete_one_person(people_id):
     people = People.query.get(people_id)
     db.session.delete(people)
     db.session.commit()
+    #Returning the person that I'm deleting + successfull deleting message 
     return jsonify(people.serialize(), "msg: Person has been deleted") 
 
-# @app.route("/people" , methods=["DELETE"])
-# def delete_all_people:
-#     people = People.get_all()
-#     print(people)
+#DETELE ALL PEOPLE
+@app.route("/people", methods=["DELETE"])
+def delete_all_people ():
+    people = People.get_all()
+    for person in people:
+        db.session.delete(person)
+        db.session.commit()
+    return jsonify("msg: Person has been deleted") 
+    
 
 #GET ALL PLANETS
 @app.route("/planets", methods=["GET"])
@@ -107,20 +113,28 @@ def create_planets():
     # return jsonify(planets.serialize())
 
 #GET PLANET BY ID
-@app.route("/planet/<int:planet_id>", methods=['GET'])
-def gert_planet_by_id(planet_id):
+@app.route("/planets/<int:planet_id>", methods=['GET'])
+def get_planet_by_id(planet_id):
     planet = Planets.get_one_by_id(planet_id)
     planet_serialized = planet.serialize()
     return jsonify(planet_serialized) 
 
 #DELETE PLANET BY ID
-@app.route("/people/<int:planet_id>", methods=['DELETE'])
+@app.route("/planets/<int:planet_id>", methods=['DELETE'])
 def delete_one_planet(planet_id):
     planet = Planets.query.get(planet_id)
     db.session.delete(planet)
     db.session.commit()
     return jsonify(planet.serialize(), "msg: Planet has been deleted") 
 
+#DELETE ALL PLANETS
+@app.route("/planets", methods=["DELETE"])
+def delete_all_planets ():
+    planets = Planets.get_all()
+    for planet in planets:
+        db.session.delete(planet)
+        db.session.commit()
+    return jsonify("msg: Planet has been deleted") 
 
 @app.route("/login", methods=['POST'])
 def handle_login():
