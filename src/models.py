@@ -154,21 +154,44 @@ class People(BaseModel,db.Model):
         db.session.commit()
 
 
-
-
-class Favorite_Planet(BaseModel,db.Model):
-    __tablename__ = 'favorite_planet'
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, db.ForeignKey('user.id'))
-    planet_id = Column(Integer, db.ForeignKey('planets.id'))
-    
+class Favorite_Planets(db.Model):
+    __tablename__ = 'Favorite_Planets'
+    tb_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    planet_id = db.Column(db.Integer, db.ForeignKey("planets.id"))
 
     def __repr__(self):
-        return '<Favorite_Planets %r>' % self.id
-
-    def serialize(self):
+        return '<Favorite_Planets %r>' % self.user_id
+    
+    def serializeForPlanet(self):
         return {
-            "id": self.id,
+            "tb_id": self.tb_id,
+            "planet_id": self.planet_id
+        }
+        
+    def serializeForUser(self):
+        return {
+            "tb_id": self.id,
             "user_id": self.user_id,
-            "planet_id":self.planet_id,
-            }
+        }
+
+class Favorite_People(db.Model):
+    __tablename__ = 'Favorite_People'
+    tb_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    person_id = db.Column(db.Integer, db.ForeignKey("people.id"))
+
+    def __repr__(self):
+        return '<Favorite_People %r>' % self.user_id
+    
+    def serializeForPerson(self):
+        return {
+            "tb_id": self.tb_id,
+            "planet_id": self.person_id
+        }
+    def serializeForUser(self):
+        return {
+            "tb_id": self.id,
+            "user_id": self.user_id,
+        }
+
