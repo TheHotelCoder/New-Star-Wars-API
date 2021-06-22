@@ -30,13 +30,20 @@ class User(db.Model,BaseModel):
     password= Column(String(250), nullable=False)
     is_logged= Column(Boolean, default=False, nullable=False)
     token = Column(String(250), nullable=True)
-    favorite_planets= db.relationship('Favorite_Planet', backref='user', lazy=True)
+    #Relation with favorites.
+    Favorite_People = db.relationship('Favorite_People',backref='user', lazy=True)
+    Favorite_Planets = db.relationship('Favorite_Planets', backref='user', lazy=True)
 
+    def serializeFavorites(self):
+        return {
+            "id": self.id,
+            "Favorite_People": list(map(lambda x: x.serializebyUser(), self.Favorite_People)),
+            "Favorite_Planets": list(map(lambda x: x.serializebyUser(), self.Favorite_Planets)),
+        }
 
     @staticmethod
     def login_credentials(email,password):
         return User.query.filter_by(email=email).filter_by(password=password).first()
-    
     
     def user_have_token(self,token):
         return User.query.filter_by(token=self.token).first()
@@ -59,8 +66,15 @@ class User(db.Model,BaseModel):
             "last_name": self.last_name,
             "email": self.email,
             "is_logged": self.is_logged,
-            "favorite_planets": list(map(lambda x: x.serialize(), self.favorite_planets))
-            # do not serialize the password, its a security breach
+            "Favorite_People": list(map(lambda x: x.serializebyUser(), self.Favorite_People)),
+            "Favorite_Planets": list(map(lambda x: x.serializebyUser(), self.Favorite_Planets))
+        }
+    
+    def serializeFavorites(self):
+        return {
+            "id": self.id,
+            "Favorite_People": list(map(lambda x: x.serializebyUser(), self.Favorite_People)),
+            "Favorite_Planets": list(map(lambda x: x.serializebyUser(), self.Favorite_Planets))
         }
 
 
@@ -72,7 +86,7 @@ class Planets(db.Model,BaseModel):
     orbital_period=Column(Integer,primary_key=False)
     rotation_period=Column(Integer,primary_key=False)
     diameter =Column(Integer,primary_key=False)
-    favorite_planets = db.relationship('Favorite_Planet', backref='planets', lazy=True)
+    Favorite_Planets = db.relationship('Favorite_Planets', backref='planets', lazy=True)
     
 
     def __repr__(self):
@@ -85,11 +99,10 @@ class Planets(db.Model,BaseModel):
             "population": self.population,
             "orbital_period" :self.orbital_period,
             "rotation_period" : self.rotation_period,
-            "diameter": self.diameter 
+            "diameter": self.diameter, 
+            "Favorite_Planets": list(map(lambda x: x.serializebyPlanets(), self.Favorite_Planets)),
             # do not serialize the password, its a security breach
         }
-
-    
 
         
     def db_post(self):        
@@ -107,11 +120,7 @@ class Planets(db.Model,BaseModel):
         db.session.delete(self)
         db.session.commit()
 
-        
-
     
-
-
 
 class People(BaseModel,db.Model):
     __tablename__ = 'people'
@@ -122,6 +131,8 @@ class People(BaseModel,db.Model):
     gender=Column(String(250))
     height = Column(String(250))
     description= Column(String(250))
+    favorite_people = db.relationship('Favorite_People', backref='people', lazy=True)
+
     def __repr__(self):
         return '<People %r>' % self.name
 
@@ -133,7 +144,8 @@ class People(BaseModel,db.Model):
             "skin_color":self.skin_color,
             "gender":self.gender,
             "height":self.height,
-            "description":self.description
+            "description":self.description,
+            "Favorite_People": list(map(lambda x: x.serializebyPeople(), self.Favorite_People))
             # do not serialize the password, its a security breach
         }
     
@@ -163,13 +175,13 @@ class Favorite_Planets(db.Model):
     def __repr__(self):
         return '<Favorite_Planets %r>' % self.user_id
     
-    def serializeForPlanet(self):
+    def serializeByPlanet(self):
         return {
             "tb_id": self.tb_id,
             "planet_id": self.planet_id
         }
         
-    def serializeForUser(self):
+    def serializeByUser(self):
         return {
             "tb_id": self.id,
             "user_id": self.user_id,
@@ -184,12 +196,12 @@ class Favorite_People(db.Model):
     def __repr__(self):
         return '<Favorite_People %r>' % self.user_id
     
-    def serializeForPerson(self):
+    def serializeByPeople(self):
         return {
             "tb_id": self.tb_id,
             "planet_id": self.person_id
         }
-    def serializeForUser(self):
+    def serializeByUser(self):
         return {
             "tb_id": self.id,
             "user_id": self.user_id,

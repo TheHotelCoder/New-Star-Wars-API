@@ -136,6 +136,7 @@ def delete_all_planets ():
         db.session.commit()
     return jsonify("msg: Planet has been deleted") 
 
+#LOGIN
 @app.route("/login", methods=['POST'])
 def handle_login():
 
